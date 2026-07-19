@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Run & Walk Challenge</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+</head>
+<body>
+    <div class="background-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+    
+    <div class="container">
+        <header>
+            <h1>🏃 RUN & WALK <span>CHALLENGE</span></h1>
+        </header>
+        
+        <main class="dashboard">
+            <section class="panel glass">
+                <div class="panel-header">
+                    <h2>TEAM LEADERBOARD</h2>
+                </div>
+                <div class="table-header">
+                    <span class="rank-col">Rank</span>
+                    <span class="name-col">Team Name</span>
+                    <span class="dist-col">Total Distance</span>
+                </div>
+                <ul id="team-list" class="leaderboard-list">
+                    <!-- JavaScript will populate this -->
+                </ul>
+            </section>
+
+            <section class="panel glass">
+                <div class="panel-header">
+                    <h2>INDIVIDUAL DISTANCE LEADERS</h2>
+                </div>
+                <div class="table-header individual-header">
+                    <span class="rank-col">Rank</span>
+                    <span class="name-col">Athlete</span>
+                    <span class="team-col">Team</span>
+                    <span class="dist-col">Total Distance</span>
+                </div>
+                <ul id="individual-list" class="leaderboard-list">
+                    <!-- JavaScript will populate this -->
+                </ul>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
