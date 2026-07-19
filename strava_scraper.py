@@ -37,19 +37,29 @@ def get_access_token():
         return None
 
 def get_club_activities(access_token):
-    """Fetches recent activities for the club."""
+    """Fetches recent activities for the club using pagination."""
     print(f"Fetching recent activities for club {CLUB_ID}...")
     activities_url = f"https://www.strava.com/api/v3/clubs/{CLUB_ID}/activities"
     headers = {'Authorization': f'Bearer {access_token}'}
-    params = {'per_page': 200, 'page': 1} # Fetch up to 200 recent activities
     
-    response = requests.get(activities_url, headers=headers, params=params)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        print(f"Error fetching activities: {response.status_code}")
-        print(response.json())
-        return []
+    all_activities = []
+    page = 1
+    while page <= 10:  # Fetch up to 2000 activities just in case
+        params = {'per_page': 200, 'page': page}
+        response = requests.get(activities_url, headers=headers, params=params)
+        
+        if response.status_code == 200:
+            data = response.json()
+            if not data:
+                break
+            all_activities.extend(data)
+            page += 1
+        else:
+            print(f"Error fetching activities: {response.status_code}")
+            print(response.json())
+            break
+            
+    return all_activities
 
 def format_time(seconds):
     """Converts seconds into HH:MM:SS format."""
@@ -74,10 +84,7 @@ def filter_and_format_activities(activities):
         
         # Hardcoded cutoff boundary (these activities and older are ignored)
         cutoffs = [
-            ("Brent M.", "Afternoon", 1.82),
-            ("Coffee Papi", "5 x 800", 2.51),
-            ("Coffee Papi", "1 Mile", 1.00),
-            ("Rachel T.", "Evening Wa", 0.98)
+            ("Brent M.", "Afternoon", 1.82)
         ]
         
         is_cutoff = False
