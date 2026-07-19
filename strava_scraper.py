@@ -63,21 +63,40 @@ def filter_and_format_activities(activities):
     filtered_data = []
     
     for activity in activities:
+        athlete = activity.get('athlete', {})
+        first_name = athlete.get('firstname', 'Unknown')
+        last_name = athlete.get('lastname', 'Unknown')
+        athlete_full = f"{first_name} {last_name}".strip()
+        
+        activity_name = activity.get('name', '')
+        distance_meters = activity.get('distance', 0)
+        distance_miles = distance_meters * 0.000621371
+        
+        # Hardcoded cutoff boundary (these activities and older are ignored)
+        cutoffs = [
+            ("Brent M.", "Afternoon", 1.82),
+            ("Coffee Papi", "5 x 800", 2.51),
+            ("Coffee Papi", "1 Mile", 1.00),
+            ("Rachel T.", "Evening Wa", 0.98)
+        ]
+        
+        is_cutoff = False
+        for c_name, c_act, c_dist in cutoffs:
+            if c_name in athlete_full and c_act in activity_name and abs(distance_miles - c_dist) < 0.1:
+                is_cutoff = True
+                break
+                
+        if is_cutoff:
+            print(f"Hit cutoff boundary: {athlete_full} - {activity_name}. Stopping.")
+            break
+
         # Check if type is Run or Walk
         activity_type = activity.get('type', '')
         if activity_type in ['Run', 'Walk']:
-            athlete = activity.get('athlete', {})
-            first_name = athlete.get('firstname', 'Unknown')
-            last_name = athlete.get('lastname', 'Unknown')
-            
-            # Distance is in meters, convert to miles
-            distance_meters = activity.get('distance', 0)
-            distance_miles = distance_meters * 0.000621371
-            
             # Format as a dictionary
             filtered_data.append({
-                'Athlete Name': f"{first_name} {last_name}".strip(),
-                'Activity Name': activity.get('name', ''),
+                'Athlete Name': athlete_full,
+                'Activity Name': activity_name,
                 'Type': activity_type,
                 'Distance (Miles)': round(distance_miles, 2),
                 'Moving Time': format_time(activity.get('moving_time', 0)),
