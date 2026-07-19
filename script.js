@@ -16,14 +16,28 @@ async function loadData() {
     }
 }
 
+function normalizeName(name) {
+    if (!name) return '';
+    return name.toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]/g, '');
+}
+
 function processData(teamsData, activitiesData) {
-    // 1. Create a map of Athlete -> Team
+    // 1. Create a map of Athlete -> Team using normalized names
     const athleteToTeam = {};
     teamsData.forEach(row => {
         if(row['Athlete Name'] && row['Team Name']) {
-            athleteToTeam[row['Athlete Name'].trim()] = row['Team Name'].trim();
+            athleteToTeam[normalizeName(row['Athlete Name'])] = row['Team Name'].trim();
         }
     });
+
+    // Helper to look up team by athlete name
+    function getTeam(name) {
+        if (!name) return 'No Team';
+        return athleteToTeam[normalizeName(name)] || 'No Team';
+    }
 
     // 2. Aggregate distances for individuals and teams
     const individualTotals = {};
@@ -38,7 +52,7 @@ function processData(teamsData, activitiesData) {
             individualTotals[name] = (individualTotals[name] || 0) + distance;
             
             // Add to team
-            const team = athleteToTeam[name] || 'No Team';
+            const team = getTeam(name);
             teamTotals[team] = (teamTotals[team] || 0) + distance;
         }
     });
@@ -46,7 +60,7 @@ function processData(teamsData, activitiesData) {
     // 3. Convert to arrays and sort by distance
     const individualArray = Object.keys(individualTotals).map(name => ({
         name: name,
-        team: athleteToTeam[name] || 'No Team',
+        team: getTeam(name),
         distance: individualTotals[name]
     })).sort((a, b) => b.distance - a.distance);
 
