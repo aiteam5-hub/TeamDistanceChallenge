@@ -56,11 +56,12 @@ function updateGreeting() {
 async function loadData() {
     const listContainer = document.getElementById('leaderboard-list');
     try {
-        const teamsRes = await fetch('teams.csv');
+        const cacheBuster = `?t=${new Date().getTime()}`;
+        const teamsRes = await fetch(`teams.csv${cacheBuster}`);
         const teamsText = await teamsRes.text();
         rawTeams = Papa.parse(teamsText, { header: true, skipEmptyLines: true }).data;
 
-        const activitiesRes = await fetch('strava_club_activities.csv');
+        const activitiesRes = await fetch(`strava_club_activities.csv${cacheBuster}`);
         const activitiesText = await activitiesRes.text();
         rawActivities = Papa.parse(activitiesText, { header: true, skipEmptyLines: true }).data;
 
@@ -93,6 +94,7 @@ function render() {
 
     // 2. Aggregate individual distances on the fly to support dynamic filters
     const individualTotals = {};
+    const normalizedNamesWithActivities = new Set();
     rawActivities.forEach(act => {
         const name = act['Athlete Name'];
         const distance = parseFloat(act['Distance (Miles)']) || 0;
@@ -104,6 +106,7 @@ function render() {
                 return;
             }
             individualTotals[name] = (individualTotals[name] || 0) + distance;
+            normalizedNamesWithActivities.add(normalizeName(name));
         }
     });
 
@@ -111,8 +114,12 @@ function render() {
     if (activityFilter === 'all') {
         rawTeams.forEach(row => {
             const name = row['Athlete Name'];
-            if (name && !individualTotals[name]) {
-                individualTotals[name] = 0.0;
+            if (name) {
+                const norm = normalizeName(name);
+                if (!normalizedNamesWithActivities.has(norm)) {
+                    individualTotals[name] = 0.0;
+                    normalizedNamesWithActivities.add(norm);
+                }
             }
         });
     }
