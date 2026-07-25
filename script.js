@@ -162,9 +162,14 @@ function render() {
         distance: teamTotals[teamName]
     }));
 
-    // Filter teams by search query
+    // Filter teams by search query (matches team name or any member name)
     teams = teams.filter(team => {
-        const matchesSearch = team.name.toLowerCase().includes(searchQuery.toLowerCase());
+        const query = searchQuery.toLowerCase();
+        let matchesSearch = team.name.toLowerCase().includes(query);
+        if (!matchesSearch) {
+            const teamMembers = rawTeams.filter(r => r['Team Name'] && r['Team Name'].trim() === team.name);
+            matchesSearch = teamMembers.some(r => r['Athlete Name'] && r['Athlete Name'].toLowerCase().includes(query));
+        }
         // Skip "No Team" unless it has distance
         if (team.name === 'No Team' && team.distance === 0) return false;
         return matchesSearch;
@@ -205,9 +210,6 @@ function render() {
     const maxDistance = activeList.length > 0 ? activeList[0].distance : 1;
 
     activeList.forEach((item, index) => {
-        const row = document.createElement('div');
-        row.className = 'leaderboard-row';
-
         // Calculate progress segments (5 blocks)
         let activeSegments = 0;
         if (maxDistance > 0 && item.distance > 0) {
@@ -219,6 +221,9 @@ function render() {
         }
 
         if (currentTab === 'individuals') {
+            const row = document.createElement('div');
+            row.className = 'leaderboard-row';
+
             // Render individual row
             const initials = getInitials(item.name);
             const avatarColor = getAvatarColor(item.name);
@@ -251,13 +256,19 @@ function render() {
                     <span class="row-action-icon">🚀</span>
                 </div>
             `;
+            listContainer.appendChild(row);
         } else {
-            // Render team row
+            // Render team container with header row and sub-list of members
+            const teamContainer = document.createElement('div');
+            teamContainer.className = 'team-card-container';
+
             const initials = getInitials(item.name);
             const avatarColor = getAvatarColor(item.name);
             const teamClass = item.name.toLowerCase().replace(/\s+/g, '');
             
-            row.innerHTML = `
+            const teamHeaderRow = document.createElement('div');
+            teamHeaderRow.className = 'leaderboard-row team-header-row';
+            teamHeaderRow.innerHTML = `
                 <div class="row-rank">${index + 1}</div>
                 <div class="row-icon-wrapper">
                     <div class="row-icon" style="background-color: ${avatarColor}">${initials}</div>
@@ -284,9 +295,51 @@ function render() {
                     <span class="row-action-icon">🚀</span>
                 </div>
             `;
-        }
+            teamContainer.appendChild(teamHeaderRow);
 
-        listContainer.appendChild(row);
+            // Get team members and their distances
+            let members = [];
+            if (item.name === 'No Team') {
+                members = Object.keys(individualTotals)
+                    .filter(n => getTeam(n) === 'No Team')
+                    .map(n => ({ name: n, distance: individualTotals[n] || 0 }));
+            } else {
+                members = rawTeams
+                    .filter(r => r['Team Name'] && r['Team Name'].trim() === item.name)
+                    .map(r => {
+                        const name = r['Athlete Name'];
+                        const norm = normalizeName(name);
+                        const key = Object.keys(individualTotals).find(k => normalizeName(k) === norm);
+                        const distance = key ? individualTotals[key] : (individualTotals[name] || 0);
+                        return { name, distance };
+                    });
+            }
+
+            // Sort members by distance descending, then by name
+            members.sort((a, b) => b.distance - a.distance || a.name.localeCompare(b.name));
+
+            const sublistEl = document.createElement('div');
+            sublistEl.className = 'team-members-sublist';
+
+            members.forEach((member, mIndex) => {
+                const memberInitials = getInitials(member.name);
+                const memberAvatarColor = getAvatarColor(member.name);
+                const memberRow = document.createElement('div');
+                memberRow.className = 'team-member-row';
+                memberRow.innerHTML = `
+                    <div class="member-info">
+                        <span class="member-rank">#${mIndex + 1}</span>
+                        <div class="member-avatar" style="background-color: ${memberAvatarColor}">${memberInitials}</div>
+                        <span class="member-name">${member.name}</span>
+                    </div>
+                    <div class="member-distance">${member.distance.toFixed(2)} mi</div>
+                `;
+                sublistEl.appendChild(memberRow);
+            });
+
+            teamContainer.appendChild(sublistEl);
+            listContainer.appendChild(teamContainer);
+        }
     });
 }
 

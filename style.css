@@ -365,6 +365,84 @@ body {
     flex-direction: column;
 }
 
+/* Team Card Container & Sub-lists */
+.team-card-container {
+    border-bottom: 1px solid #f3f4f6;
+    display: flex;
+    flex-direction: column;
+}
+
+.team-card-container:last-child {
+    border-bottom: none;
+}
+
+.team-header-row {
+    border-bottom: none !important;
+}
+
+.team-members-sublist {
+    background-color: #f9fafb;
+    padding: 0.6rem 1.5rem 0.85rem 4.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    border-top: 1px dashed #e5e7eb;
+}
+
+.team-member-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #ffffff;
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 0.45rem 0.85rem;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.team-member-row:hover {
+    border-color: #cbd5e1;
+    background-color: #ffffff;
+}
+
+.member-info {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.member-rank {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    min-width: 22px;
+}
+
+.member-avatar {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.member-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.member-distance {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #111827;
+}
+
 /* Leaderboard Row */
 .leaderboard-row {
     display: flex;
@@ -618,5 +696,9 @@ body {
     
     .row-meta {
         display: none; /* Hide team tag on narrow screens to save space */
+    }
+
+    .team-members-sublist {
+        padding: 0.6rem 1rem 0.85rem 1rem;
     }
 }
