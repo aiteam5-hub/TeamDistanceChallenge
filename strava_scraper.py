@@ -94,14 +94,15 @@ def filter_and_format_activities(activities):
                 break
                 
         if is_cutoff:
-            print(f"Hit cutoff boundary: {athlete_full} - {activity_name}. Stopping.")
-            break
+            print(f"Hit cutoff boundary: {athlete_full} - {activity_name}. Skipping cutoff activity.")
+            continue
 
         # Check if type is Run or Walk
         activity_type = activity.get('type', '')
         if activity_type in ['Run', 'Walk']:
             # Format as a dictionary
             filtered_data.append({
+                'Activity ID': activity.get('id'),
                 'Athlete Name': athlete_full,
                 'Activity Name': activity_name,
                 'Type': activity_type,
@@ -122,20 +123,28 @@ def save_to_files(new_activities):
         print("No new running/walking activities to save.")
         return
 
-    # To avoid duplicates without an ID, we create a composite key
+    # Fallback composite key if Activity ID is missing
     composite_cols = ['Athlete Name', 'Activity Name', 'Distance (Miles)', 'Moving Time']
     
     if os.path.exists(EXCEL_FILENAME):
         existing_df = pd.read_excel(EXCEL_FILENAME)
         
-        # Combine existing and new, then drop duplicates based on the composite key
+        # Combine existing and new
         combined_df = pd.concat([existing_df, new_df], ignore_index=True)
-        final_df = combined_df.drop_duplicates(subset=composite_cols, keep='first')
+        
+        # Deduplicate using Activity ID if present and populated, else composite key
+        if 'Activity ID' in combined_df.columns and combined_df['Activity ID'].notnull().any():
+            final_df = combined_df.drop_duplicates(subset=['Activity ID'], keep='first')
+        else:
+            final_df = combined_df.drop_duplicates(subset=composite_cols, keep='first')
         
         added_count = len(final_df) - len(existing_df)
         print(f"Added {added_count} new records.")
     else:
-        final_df = new_df
+        if 'Activity ID' in new_df.columns and new_df['Activity ID'].notnull().any():
+            final_df = new_df.drop_duplicates(subset=['Activity ID'], keep='first')
+        else:
+            final_df = new_df.drop_duplicates(subset=composite_cols, keep='first')
         print(f"Created files with {len(final_df)} records.")
         
     final_df.to_excel(EXCEL_FILENAME, index=False)
