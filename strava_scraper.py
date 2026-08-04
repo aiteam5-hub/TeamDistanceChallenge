@@ -69,7 +69,7 @@ def format_time(seconds):
     return f"{int(hours):02d}:{int(minutes):02d}:{int(secs):02d}"
 
 def filter_and_format_activities(activities):
-    """Filters for Run/Walk and formats the data for CSV."""
+    """Filters for Run/Walk/Hike and formats the data for CSV."""
     filtered_data = []
     
     for activity in activities:
@@ -97,9 +97,9 @@ def filter_and_format_activities(activities):
             print(f"Hit cutoff boundary: {athlete_full} - {activity_name}. Skipping cutoff activity.")
             continue
 
-        # Check if type is Run or Walk
+        # Check if type is Run, Walk, or Hike
         activity_type = activity.get('type', '')
-        if activity_type in ['Run', 'Walk']:
+        if activity_type in ['Run', 'Walk', 'Hike']:
             # Format as a dictionary
             filtered_data.append({
                 'Activity ID': activity.get('id'),
@@ -112,7 +112,7 @@ def filter_and_format_activities(activities):
                 'Elevation Gain (m)': activity.get('total_elevation_gain', 0)
             })
             
-    print(f"Filtered down to {len(filtered_data)} Run/Walk activities.")
+    print(f"Filtered down to {len(filtered_data)} Run/Walk/Hike activities.")
     return filtered_data
 
 def save_to_files(new_activities):
@@ -120,7 +120,7 @@ def save_to_files(new_activities):
     new_df = pd.DataFrame(new_activities)
     
     if new_df.empty:
-        print("No new running/walking activities to save.")
+        print("No new running/walking/hiking activities to save.")
         return
 
     # Fallback composite key if Activity ID is missing

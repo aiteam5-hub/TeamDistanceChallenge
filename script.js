@@ -98,7 +98,7 @@ function render() {
     rawActivities.forEach(act => {
         const name = act['Athlete Name'];
         const distance = parseFloat(act['Distance (Miles)']) || 0;
-        const type = act['Type']; // 'Run' or 'Walk'
+        const type = act['Type']; // 'Run', 'Walk', or 'Hike'
 
         if (name) {
             // Apply activity type filter
